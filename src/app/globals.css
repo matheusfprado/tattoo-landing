@@ -3,6 +3,12 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --emerald-glow: rgba(16, 81, 60, 0.65);
+  --emerald-wire: rgba(20, 70, 54, 0.35);
+  --scroll-progress: 0;
+  --scroll-tilt: 0deg;
+  --scroll-skew: 0deg;
 }
 
 @theme inline {
@@ -23,4 +29,253 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20vmax;
+  background: conic-gradient(from 120deg at 50% 50%, rgba(14, 61, 47, 0.12), transparent 55%);
+  opacity: clamp(0.15, var(--scroll-progress) + 0.1, 0.35);
+  transform: rotate(calc(var(--scroll-tilt))) scale(calc(1 + var(--scroll-progress) * 0.3));
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.tattoo-perspective {
+  position: relative;
+  perspective: 1400px;
+  transform-style: preserve-3d;
+}
+
+.tattoo-card-3d {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.65s var(--ease-soft), box-shadow 0.65s var(--ease-soft), border-color 0.65s var(--ease-soft);
+  will-change: transform, box-shadow;
+  border-color: rgba(20, 70, 54, 0.28);
+}
+
+.tattoo-card-3d::before,
+.tattoo-card-3d::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transition: opacity 0.6s var(--ease-soft);
+  pointer-events: none;
+}
+
+.tattoo-card-3d::before {
+  border: 1px solid var(--emerald-wire);
+  background: radial-gradient(circle at top, rgba(30, 140, 110, 0.2), transparent 55%);
+  transform: translateZ(-12px) scale(1.02);
+  opacity: 0;
+}
+
+.tattoo-card-3d::after {
+  background: linear-gradient(135deg, rgba(12, 48, 38, 0.22), rgba(6, 18, 14, 0.55));
+  transform: translateZ(-24px) scale(1.08);
+  opacity: 0;
+}
+
+.tattoo-perspective:hover .tattoo-card-3d,
+.tattoo-card-3d:hover {
+  transform: rotateX(7deg) rotateY(-7deg) translateY(-4px);
+  box-shadow: 0 25px 60px rgba(7, 31, 24, 0.55), 0 0 0 1px rgba(22, 74, 56, 0.25);
+  border-color: rgba(45, 181, 139, 0.45);
+}
+
+.tattoo-perspective:hover .tattoo-card-3d::before,
+.tattoo-card-3d:hover::before,
+.tattoo-perspective:hover .tattoo-card-3d::after,
+.tattoo-card-3d:hover::after {
+  opacity: 1;
+}
+
+.tattoo-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(0);
+  background: radial-gradient(circle at 30% 30%, rgba(46, 181, 139, 0.55), transparent 70%);
+  animation: tattoo-orbit 16s ease-in-out infinite alternate;
+  mix-blend-mode: screen;
+  opacity: 0.65;
+}
+
+.tattoo-orb--smoke {
+  background: radial-gradient(circle at 20% 40%, rgba(12, 90, 66, 0.35), transparent 70%);
+  animation-duration: 20s;
+}
+
+.tattoo-grid {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background-image: linear-gradient(rgba(29, 94, 72, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(29, 94, 72, 0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.8) 35%, rgba(0, 0, 0, 0.95) 100%);
+  opacity: 0.6;
+  transform: translateZ(-30px);
+  pointer-events: none;
+}
+
+.tattoo-ink-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(120deg, transparent 35%, rgba(76, 228, 182, 0.15) 45%, transparent 58%);
+  transform: translateZ(6px);
+  opacity: 0;
+  transition: opacity 0.6s var(--ease-soft);
+}
+
+.tattoo-card-3d:hover .tattoo-ink-sheen,
+.tattoo-perspective:hover .tattoo-card-3d .tattoo-ink-sheen {
+  opacity: 1;
+}
+
+.tattoo-scroll-warp {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 1s var(--ease-soft);
+  will-change: transform;
+}
+
+.tattoo-scroll-warp::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: radial-gradient(circle at top, rgba(62, 214, 165, 0.08), transparent 70%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 1s var(--ease-soft);
+  pointer-events: none;
+}
+
+.tattoo-scroll-warp.is-visible {
+  transform: rotateX(calc(var(--scroll-tilt))) rotateY(calc(var(--scroll-skew))) translateZ(calc(var(--scroll-progress) * 18px));
+}
+
+.tattoo-scroll-warp.is-visible::after {
+  opacity: clamp(0, var(--scroll-progress) + 0.15, 0.65);
+}
+
+[data-ink-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 48px, -120px) scale(0.94);
+  transition: opacity 0.9s var(--ease-soft), transform 1.2s var(--ease-soft);
+  will-change: transform, opacity;
+}
+
+[data-ink-reveal].is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.ink-glitch {
+  position: relative;
+  overflow: hidden;
+}
+
+.ink-glitch::before,
+.ink-glitch::after {
+  content: attr(data-glitch);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+}
+
+.ink-glitch::before {
+  color: rgba(62, 214, 165, 0.3);
+  transform: translate3d(-2px, -1px, 0);
+}
+
+.ink-glitch::after {
+  color: rgba(20, 200, 150, 0.15);
+  transform: translate3d(3px, 1px, 0);
+}
+
+.is-visible .ink-glitch::before,
+.is-visible .ink-glitch::after {
+  animation: ink-glitch 3s steps(2, end) infinite;
+}
+
+@keyframes tattoo-orbit {
+  0% {
+    transform: translate3d(-30%, -10%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(35%, 40%, 0) scale(1.15);
+  }
+  100% {
+    transform: translate3d(-15%, 60%, 0) scale(0.95);
+  }
+}
+
+@keyframes ink-glitch {
+  0%,
+  90% {
+    opacity: 0;
+  }
+  92% {
+    opacity: 0.6;
+  }
+  95% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tattoo-card-3d,
+  .tattoo-orb {
+    transition: none;
+    animation: none;
+  }
+
+  .tattoo-perspective:hover .tattoo-card-3d,
+  .tattoo-card-3d:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .tattoo-card-3d::before,
+  .tattoo-card-3d::after,
+  .tattoo-grid,
+  .tattoo-ink-sheen {
+    transform: none;
+  }
+
+  .tattoo-scroll-warp {
+    transition: none;
+    transform: none !important;
+  }
+
+  [data-ink-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.is-idle .tattoo-orb {
+  animation-play-state: paused;
+  opacity: 0.25;
+}
+
+.is-idle .tattoo-card-3d {
+  transition-duration: 0.25s;
+  box-shadow: none !important;
+}
+
+.is-idle .tattoo-card-3d::before,
+.is-idle .tattoo-card-3d::after {
+  opacity: 0;
 }
